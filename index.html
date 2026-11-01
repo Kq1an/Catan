@@ -1082,7 +1082,7 @@ body.movableToasts #toasts.dragging{ cursor:grabbing }
         <div class="q">HOW MANY AT THE TABLE?</div>
         <div id="seatPick"></div>
         <div class="q" style="margin-top:14px">VICTORY TARGET</div>
-        <input id="playTarget" type="number" min="3" max="30" inputmode="numeric">
+        <input id="playTarget" type="number" min="3" max="50" inputmode="numeric">
         <p class="note">Pick how many victory points it takes to win this game.</p>
         <label class="optRow" style="margin-top:12px">
           <input type="checkbox" id="playAutoRoll">
@@ -1132,7 +1132,7 @@ body.movableToasts #toasts.dragging{ cursor:grabbing }
         <p class="note">Empty seats are dropped when you start, so pick generously.</p>
 
         <div class="secHead" style="margin-top:18px">VICTORY TARGET</div>
-        <input id="hostTarget" type="number" min="3" max="30" inputmode="numeric">
+        <input id="hostTarget" type="number" min="3" max="50" inputmode="numeric">
         <p class="note">Choose the score needed to win before you open the room.</p>
         <label class="optRow" style="margin-top:8px">
           <input type="checkbox" id="hostAutoRoll">
@@ -1236,6 +1236,9 @@ function defaultWinVP(nPlayers){
     : (BIG_BOARD ? 12 : 10);
 }
 let WIN_VP = defaultWinVP(4);
+// the highest target a game can be set to; the playTarget and hostTarget
+// fields carry the same number in their max attribute
+const MAX_WIN_VP = 50;
 
 function stockForPlayers(nPlayers){
   if (nPlayers <= 4) return { ...BASE_STOCK };
@@ -1533,7 +1536,7 @@ function newGame(nPlayers, seed, initialWinVP = defaultWinVP(nPlayers), unlimite
   dealTerrain();
   dealPorts();
 
-  const targetWinVP = clamp(Math.round(+initialWinVP || defaultWinVP(nPlayers)), 3, 30);
+  const targetWinVP = clamp(Math.round(+initialWinVP || defaultWinVP(nPlayers)), 3, MAX_WIN_VP);
   STOCK = stockForTarget(nPlayers, targetWinVP);
   WIN_VP = targetWinVP;
 
@@ -1952,7 +1955,7 @@ function runCommand(raw){
     }
     case '/target': {
       const n = +args[0];
-      if (n >= 3 && n <= 30){ WIN_VP = n; log(`the target is now <b>${n}</b> points`); }
+      if (n >= 3 && n <= MAX_WIN_VP){ WIN_VP = n; log(`the target is now <b>${n}</b> points`); }
       break;
     }
     case '/give': {
@@ -6684,7 +6687,7 @@ function syncTargetInput(id, wasDefault, nextDefault){
   if (!Number.isFinite(n) || n === wasDefault) el.value = String(nextDefault);
 }
 function readTargetInput(id, fallback){
-  return clamp(Math.round(+($(id)?.value || fallback)), 3, 30);
+  return clamp(Math.round(+($(id)?.value || fallback)), 3, MAX_WIN_VP);
 }
 
 // JOIN and HOST need a name; PLAY and RULES do not.
@@ -6972,7 +6975,7 @@ async function netHost(seatCount, myName, makePublic, winVP=defaultWinVP(seatCou
   NET.myName = (myName || '').trim() || SEATS[0].name;
   NET.public = !!makePublic;
   NET.roomRef = fb.ref(NET.db, 'rooms/' + NET.code);
-  hostWinVP = clamp(Math.round(+winVP || defaultWinVP(seatCount)), 3, 30);
+  hostWinVP = clamp(Math.round(+winVP || defaultWinVP(seatCount)), 3, MAX_WIN_VP);
   hostWinVPCustom = !!customWinVP;
   hostAutoRoll = !!autoRoll;
   hostTimeout = !!timeout;
@@ -8085,7 +8088,7 @@ function renderAdmin(){
     else if (act === 'num'){ tiles[adminTile].number = +v; rebuildTiles(); }
     else if (act === 'road'){ G.longestOwner = adminSeat; G.longestLen = Math.max(5, G.longestLen); }
     else if (act === 'army'){ G.armyOwner = adminSeat; G.armyN = Math.max(3, G.players[adminSeat].knights); }
-    else if (act === 'target') WIN_VP = clamp(WIN_VP + (+v), 3, 30);
+    else if (act === 'target') WIN_VP = clamp(WIN_VP + (+v), 3, MAX_WIN_VP);
     else if (act === 'deck'){
       G.devDeck = makeDevDeck();
     }
