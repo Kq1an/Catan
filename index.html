@@ -1561,9 +1561,13 @@ function newGame(nPlayers, seed, initialWinVP = defaultWinVP(nPlayers), unlimite
   // Two passes round the table in the same direction, matching normal turn
   // order. Official Catan reverses the second pass to compensate the last
   // player; flip SNAKE_DRAFT if you ever want that back.
-  const fwd = G.players.map(p=>p.id);
+  // Who starts is drawn apart from the board's seed, so it changes every game
+  // and guests take it from the host's snapshot rather than working it out.
+  const first = Math.floor(Math.random() * nPlayers);
+  const fwd = G.players.map((_, i) => (first + i) % nPlayers);
   G.setupOrder = SNAKE_DRAFT ? [...fwd, ...fwd.slice().reverse()] : [...fwd, ...fwd];
   G.setupIdx = 0; G.setupRound = 0; G.setupVertex = -1;
+  G.turn = first;
   G.phase = 'setup';
 }
 
@@ -2296,7 +2300,7 @@ function setupAdvance(){
   G.setupVertex = -1;
   if (G.setupIdx >= G.setupOrder.length){
     G.phase = 'roll';
-    G.turn = 0;
+    G.turn = G.setupOrder[0];          // whoever placed first rolls first
     return true;                       // setup complete
   }
   G.setupRound = G.setupIdx >= G.players.length ? 1 : 0;
@@ -6867,6 +6871,7 @@ $('startBtn').onclick = ()=>{
     ? `A fresh board for ${seatCount}. You are ${G.players[0].name}; the rest are bots.`
     : `A fresh board for ${seatCount}. Pass the mouse along each turn.`, true);
   if (G.extension) log('The <b>extension</b> is on — takeover, fortification and police. See RULES for the prices.');
+  log(`${nameOf(G.setupOrder[0])} goes first.`);
   renderDie($('d0'),0); renderDie($('d1'),0); $('diceSum').textContent='';
   renderAll();
   runSetup();
@@ -7840,6 +7845,7 @@ async function netStartGame(){
   elToasts.innerHTML = '';
   log(`Room ${NET.code} — ${here.map(h=>h.name).join(', ')}.`, true);
   if (G.extension) log('The <b>extension</b> is on — takeover, fortification and police. See RULES for the prices.');
+  log(`${nameOf(G.setupOrder[0])} goes first.`);
   hostBriefing();
   renderDie($('d0'),0); renderDie($('d1'),0); $('diceSum').textContent='';
   renderAll();
