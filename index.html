@@ -4222,7 +4222,7 @@ function flyProduction(detail){
       setTimeout(()=>{
         card.style.opacity = '1';
         card.style.transform =
-          `translate(${to.x - from.x}px, ${to.y - from.y}px) scale(${d.pid === mine ? 1 : .8}) rotate(${rr(-14,14)}deg)`;
+          `translate(${to.x - from.x}px, ${to.y - from.y}px) scale(${d.pid === mine ? 1 : .8}) rotate(${Math.random() * 28 - 14}deg)`;
       }, delay + 20);
       setTimeout(()=>{ card.style.opacity = '0'; }, delay + 640);
       setTimeout(()=>card.remove(), delay + 1050);
