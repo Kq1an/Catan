@@ -2116,14 +2116,15 @@ function canAffordTakeover(p, what){
   if (p.vpCards < rule.vp) return false;
   return ADMIN_FREE() || canAfford(p, rule.cost);
 }
-// You can only take what one of your own roads leads to: a road that joins
-// yours (a rival building on the shared corner still blocks it), or a
-// settlement or city on the end of one of your roads.
+// You can only take what one of your own roads leads to: a road that touches
+// one of your roads or buildings (a building on the shared corner does not
+// block it), or a settlement or city on the end of one of your roads.
 function isTakeoverTarget(pid, what, id){
   if (what === 'road'){
     const e = edges[id];
     if (!e || e.road < 0 || e.road === pid || !isOwnable(e.road)) return false;
-    return roadConnects(id, pid);
+    return e.v.some(vid => verts[vid].owner === pid
+      || verts[vid].edges.some(o => o !== id && edges[o].road === pid));
   }
   const v = verts[id];
   if (!v || v.building !== what || v.owner < 0 || v.owner === pid || !isOwnable(v.owner)) return false;
