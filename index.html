@@ -6245,7 +6245,11 @@ function tickTurnClock(){
   else showBigClock(left, (G.players[owner].name + (G.awaitRobber >= 0 ? ' · robber' : '')).toUpperCase());
   if (left > 0 || !iAmHost()) return;
 
+  if (diceSettling) return;
+
   flushPlayerClock();
+  clearInterval(turnTicker);
+  turnTicker = null;
 
   if (G.awaitRobber >= 0){
     const pid = G.awaitRobber;
@@ -6260,7 +6264,6 @@ function tickTurnClock(){
   if (isBot(G.turn)) return;
 
   log(`${nameOf(G.turn)} ran out of time`);
-  G.turnEndsAt = Date.now() + 2000;
   closeIdleChoices();
   if (G.phase === 'over') return;
   if (G.phase === 'roll') doRoll(false);
