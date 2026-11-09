@@ -6133,6 +6133,7 @@ function botDoSetup(pid){
 let turnTicker = null, autoRollTimer = null;
 let playerClockStartedAt = 0;
 let turnExpiring = false;
+let turnTimedOut = false;
 
 function noteTurnActivity(_seat){}
 function refreshTurnDeadline(){
@@ -6156,6 +6157,7 @@ function startTurnClock(){
   turnTicker = null;
   playerClockStartedAt = 0;
   turnExpiring = false;
+  turnTimedOut = false;
   if (!G.turnSeconds){
     G.turnEndsAt = 0;
     const el = $('turnClock');
@@ -6254,18 +6256,22 @@ function tickTurnClock(){
 
   if (G.awaitRobber >= 0){
     const pid = G.awaitRobber;
-    if (isBot(pid)) return;
-    log(`${nameOf(pid)} ran out of time`);
+    if (isBot(pid)){ turnExpiring = false; return; }
+    if (!turnTimedOut) log(`${nameOf(pid)} ran out of time`);
+    turnTimedOut = true;
     resolveRobber(timeoutRobberTile(pid), pid, true);
+    turnExpiring = false;
     if (pid !== G.turn || G.pending) return;
     if (G.phase === 'main') doEndTurn();
     else if (G.phase === 'roll') doRoll(false);
     return;
   }
-  if (isBot(G.turn)) return;
+  if (isBot(G.turn)){ turnExpiring = false; return; }
 
-  log(`${nameOf(G.turn)} ran out of time`);
+  if (!turnTimedOut) log(`${nameOf(G.turn)} ran out of time`);
+  turnTimedOut = true;
   closeIdleChoices();
+  turnExpiring = false;
   if (G.phase === 'over') return;
   if (G.phase === 'roll') doRoll(false);
   else doEndTurn();
