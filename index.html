@@ -6132,6 +6132,7 @@ function botDoSetup(pid){
 // driver or leaves the board to the human.
 let turnTicker = null, autoRollTimer = null;
 let playerClockStartedAt = 0;
+let turnExpiring = false;
 
 function noteTurnActivity(_seat){}
 function refreshTurnDeadline(){
@@ -6154,6 +6155,7 @@ function startTurnClock(){
   clearInterval(turnTicker);
   turnTicker = null;
   playerClockStartedAt = 0;
+  turnExpiring = false;
   if (!G.turnSeconds){
     G.turnEndsAt = 0;
     const el = $('turnClock');
@@ -6245,11 +6247,10 @@ function tickTurnClock(){
   else showBigClock(left, (G.players[owner].name + (G.awaitRobber >= 0 ? ' · robber' : '')).toUpperCase());
   if (left > 0 || !iAmHost()) return;
 
-  if (diceSettling) return;
+  if (diceSettling || turnExpiring) return;
 
   flushPlayerClock();
-  clearInterval(turnTicker);
-  turnTicker = null;
+  turnExpiring = true;
 
   if (G.awaitRobber >= 0){
     const pid = G.awaitRobber;
