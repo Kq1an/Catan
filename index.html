@@ -5980,8 +5980,8 @@ function doRoll(countActivity = true){
       setTimeout(()=>{
         diceSettling = false;          // from here awaitRobber / discardDue say what is owed
         startDiscardClock();
-        renderAll();                   // everyone who owes gets their own tray
         if (!discardsOutstanding()) afterDiscards();
+        renderAll();
       }, 900);
     } else {
       const gains = produce(roll);
